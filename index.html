@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Riva Luciano | Gestione Magazzino</title>
+    
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,600;0,800;1,400&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        riva: '#E30613', 
+                        darkBg: '#0b0f1a',
+                        darkCard: '#161e31'
+                    },
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        [v-cloak] { display: none; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; }
+
+        /* EFFETTO GLOW CATEGORIE */
+        .cat-glow:hover {
+            filter: drop-shadow(0 0 10px rgba(227, 6, 19, 0.4));
+            transform: translateY(-2px);
+            border-color: #E30613;
+        }
+
+        /* FIX SELECT NIGHT MODE */
+        select option { background: #161e31; color: white; }
+
+        /* ANIMAZIONE PULSANTE + */
+        .fab-container {
+            width: 64px;
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @media (min-width: 1024px) {
+            .fab-container:hover { width: 220px; }
+            .fab-container:hover .plus-icon { transform: rotate(90deg); }
+            .fab-container:hover .fab-text { opacity: 1; width: auto; margin-left: 12px; }
+        }
+        .fab-text { opacity: 0; width: 0; white-space: nowrap; transition: opacity 0.3s; }
+
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
+
+<div id="app" v-cloak @click="isMenuOpen = false" class="min-h-screen flex flex-col">
+    
+    <!-- HEADER -->
+    <nav class="sticky top-0 z-50 bg-white/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <img src="logo_riva.png" alt="Riva Luciano" class="h-10 md:h-12 w-auto object-contain">
+                <div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
+                <div class="hidden lg:block">
+                    <h1 class="text-[10px] font-black uppercase tracking-[0.2em] text-riva italic">RIVA ALIMENTARI</h1>
+                    <p class="text-[8px] font-bold opacity-40 uppercase">Gestione magazzino</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+                <button @click.stop="toggleDarkMode" class="p-3 rounded-2xl bg-white dark:bg-darkCard shadow-sm hover:bg-slate-50 transition-all border border-slate-100 dark:border-slate-700">
+                    {{ isDarkMode ? '☀️' : '🌙' }}
+                </button>
+                <div class="relative">
+                    <button @click.stop="isMenuOpen = !isMenuOpen" class="bg-riva text-white px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg shadow-riva/20 active:scale-95 transition-all">
+                        Menu <span>▼</span>
+                    </button>
+                    <transition name="list">
+                        <div v-if="isMenuOpen" class="absolute right-0 top-full mt-3 w-64 bg-white dark:bg-darkCard rounded-[2rem] shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden z-50">
+                            <button @click="exportData" class="w-full text-left px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-50 dark:border-slate-800 uppercase">Esporta Backup</button>
+                            <label class="w-full text-left px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold cursor-pointer block border-b border-slate-50 dark:border-slate-800 uppercase">
+                                Importa Excel / CSV
+                                <input type="file" @change="importFile" class="hidden">
+                            </label>
+                            <button @click="openCatModal" class="w-full text-left px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-50 dark:border-slate-800 uppercase">⚙️ Gestisci Categorie</button>
+                            <button @click="isSettingsModalOpen = true" class="w-full text-left px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-50 dark:border-slate-800 uppercase">🛠️ Soglia Pre-Allerta</button>
+                            <button @click="showContact = true" class="w-full text-left px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold uppercase italic">👤 Supporto Elettricamente</button>
+                            <button @click="resetData" class="w-full text-left px-6 py-4 text-riva hover:bg-red-50 text-[11px] font-black border-t border-slate-100 dark:border-slate-800 uppercase tracking-tighter">🗑️ Reset Sistema</button>
+                        </div>
+                    </transition>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-8 pb-32">
+        
+        <!-- RICERCA (PROTAGONISTA) -->
+        <section class="mb-12 text-center">
+            <div class="relative max-w-3xl mx-auto group mb-8">
+                <input v-model="searchQuery" type="text" placeholder="Cerca codice, nome, impianto o cassetta..." 
+                class="w-full bg-white dark:bg-darkCard p-7 pl-16 rounded-[2.5rem] shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-200 dark:border-slate-700 outline-none transition-all text-xl font-medium focus:border-riva group-hover:border-riva/30">
+                <span class="absolute left-7 top-7 text-2xl opacity-20 group-focus-within:opacity-100 transition-opacity font-bold">🔍</span>
+            </div>
+
+            <!-- FILTRI CATEGORIE -->
+            <div class="flex flex-wrap justify-center gap-3 mb-10 px-2">
+                <button @click="filterCat = 'all'" :class="filterCat === 'all' ? 'bg-riva text-white shadow-lg border-transparent' : 'bg-white dark:bg-darkCard text-slate-400 border-slate-200'" class="cat-glow px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all border">TUTTI</button>
+                <button v-for="cat in categories" @click="filterCat = cat.name" :class="filterCat === cat.name ? 'bg-riva text-white shadow-lg border-transparent' : 'bg-white dark:bg-darkCard text-slate-400 border-slate-200'" class="cat-glow px-8 py-3.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 border">
+                    <span>{{ cat.icon }}</span> {{ cat.name }}
+                </button>
+            </div>
+
+            <!-- ORDINAMENTO -->
+            <div class="flex flex-col md:flex-row justify-center items-center gap-4">
+                <div class="bg-white dark:bg-darkCard px-6 py-4 rounded-[1.5rem] border border-slate-200 dark:border-slate-700 shadow-sm flex items-center gap-4 min-w-[320px]">
+                    <span class="text-[9px] font-black uppercase opacity-30 whitespace-nowrap">Ordina Per:</span>
+                    <select v-model="sortBy" class="bg-transparent text-[11px] font-black uppercase tracking-widest outline-none cursor-pointer text-slate-600 dark:text-slate-100 w-full appearance-none">
+                        <option value="nome">Nome Alfabetico</option>
+                        <option value="qty-asc">Quantità: Crescente</option>
+                        <option value="qty-desc">Quantità: Decrescente</option>
+                    </select>
+                </div>
+                
+                <button @click="filterLow = !filterLow" :class="filterLow ? 'bg-riva text-white border-transparent shadow-lg' : 'bg-white dark:bg-darkCard text-slate-400 border-slate-200'" class="px-8 py-4 rounded-[1.5rem] border text-[11px] font-black uppercase tracking-widest transition-all active:scale-95">
+                    ⚠️ Solo Sottoscorta
+                </button>
+            </div>
+        </section>
+
+        <!-- GRIGLIA ARTICOLI -->
+        <transition-group name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div v-for="item in filteredItems" :key="item.id" @click="openEditModal(item)" 
+            class="bg-white dark:bg-darkCard p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 hover:border-riva/40 hover:shadow-2xl transition-all group cursor-pointer flex flex-col justify-between shadow-sm">
+                
+                <div>
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[9px] font-black bg-slate-50 dark:bg-slate-800 px-3 py-1.5 rounded-lg text-slate-400 uppercase tracking-widest border border-slate-100 dark:border-slate-800">{{ item.posizione }}</span>
+                        <span class="text-[8px] font-black opacity-30 uppercase tracking-tighter">{{ item.codice }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 rounded-[1.5rem] bg-slate-100 dark:bg-darkBg flex-shrink-0 flex items-center justify-center border border-slate-100 dark:border-slate-800 overflow-hidden shadow-inner group-hover:scale-105 transition-transform duration-300">
+                            <img v-if="item.foto" :src="item.foto" class="w-full h-full object-cover">
+                            <span v-else class="text-3xl opacity-20">{{ getIcon(item.tag) }}</span>
+                        </div>
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-extrabold leading-tight truncate uppercase dark:text-white">{{ item.nome }}</h3>
+                            <p class="text-[9px] text-riva font-bold uppercase mt-1 tracking-widest opacity-60 italic">{{ item.impianto || 'Impianto Gen.' }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 pt-4 border-t border-slate-50 dark:border-slate-800 flex justify-between items-end">
+                    <p class="text-[10px] text-slate-400 italic pr-4 truncate max-w-[140px]">{{ item.note || '...' }}</p>
+                    <div class="text-right">
+                        <span class="text-4xl font-black italic tracking-tighter transition-colors" :class="getQtyColor(item)">
+                            {{ item.quantita }}
+                        </span>
+                        <span class="text-[9px] font-black opacity-30 ml-1 uppercase">Pz</span>
+                    </div>
+                </div>
+            </div>
+        </transition-group>
+
+        <!-- EMPTY STATE -->
+        <div v-if="filteredItems.length === 0" class="text-center py-40 animate-in fade-in duration-500">
+            <div class="text-7xl mb-6 opacity-10">🔍</div>
+            <p class="text-[11px] font-black uppercase tracking-[0.5em] opacity-30 italic">Nessuna corrispondenza trovata</p>
+            <button @click="resetFilters" class="mt-8 text-riva text-[10px] font-black uppercase underline tracking-widest">Azzera Ricerca</button>
+        </div>
+    </main>
+
+    <!-- FAB PULSANTE AGGIUNGI -->
+    <div class="fixed bottom-10 right-10 z-[60]">
+        <button @click="openAddModal" class="fab-container flex items-center bg-riva text-white h-16 rounded-[2rem] shadow-2xl shadow-riva/40 overflow-hidden group border-4 border-white dark:border-darkBg">
+            <div class="plus-icon w-16 h-16 flex items-center justify-center text-4xl font-light shrink-0 transition-transform duration-500">
+                +
+            </div>
+            <span class="fab-text text-[11px] font-black uppercase tracking-widest pr-8">Aggiungi Articolo</span>
+        </button>
+    </div>
+
+    <!-- MODALE INSERIMENTO / MODIFICA -->
+    <transition name="list">
+        <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="closeModal">
+            <div class="bg-white dark:bg-darkCard w-full max-w-2xl rounded-[3.5rem] shadow-2xl overflow-hidden border border-white/10 animate-in zoom-in-95 duration-300">
+                <div class="p-8 md:p-12 max-h-[90vh] overflow-y-auto no-scrollbar">
+                    <div class="flex justify-between items-start mb-10">
+                        <div>
+                            <h2 class="text-xl font-extrabold uppercase tracking-tighter italic">{{ editingId ? 'Scheda Tecnica' : 'Nuovo Articolo' }}</h2>
+                            <p class="text-[9px] font-black text-riva uppercase tracking-widest mt-1">Gestione magazzino</p>
+                        </div>
+                        <button @click="closeModal" class="w-14 h-14 flex items-center justify-center rounded-3xl bg-slate-50 dark:bg-slate-800 text-3xl hover:bg-riva hover:text-white transition-all shadow-sm">&times;</button>
+                    </div>
+
+                    <div class="space-y-8">
+                        <!-- Foto Upload -->
+                        <div class="aspect-video bg-slate-50 dark:bg-darkBg rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center relative cursor-pointer overflow-hidden group shadow-inner">
+                            <img v-if="form.foto" :src="form.foto" class="w-full h-full object-cover">
+                            <div v-else class="text-center opacity-30">
+                                <span class="text-5xl">📸</span>
+                                <p class="text-[10px] font-black mt-3 uppercase tracking-widest">Allega Foto</p>
+                            </div>
+                            <input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
+                        </div>
+
+                        <!-- Info Fields -->
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-3 gap-4">
+                                <div class="col-span-1 space-y-1">
+                                    <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-widest">Codice</label>
+                                    <input v-model="form.codice" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs uppercase shadow-inner">
+                                </div>
+                                <div class="col-span-2 space-y-1">
+                                    <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-widest">Descrizione</label>
+                                    <input v-model="form.nome" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-sm shadow-inner">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-widest">Fornitore</label>
+                                    <input v-model="form.fornitore" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-widest">Impianto</label>
+                                    <input v-model="form.impianto" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-widest">Posizione Scaffale</label>
+                                    <input v-model="form.posizione" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner uppercase tracking-widest">
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-widest">Categoria</label>
+                                    <select v-model="form.tag" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-black text-[10px] uppercase shadow-inner appearance-none transition-colors">
+                                        <option v-for="cat in categories" :value="cat.name">{{ cat.icon }} {{ cat.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quantity Control (PROTECTED) -->
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-slate-50 dark:bg-darkBg p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-inner">
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-widest">Pezzi Presenti</label>
+                                <div class="flex items-center gap-8">
+                                    <button @click="updateQtyManual(-1)" class="text-3xl font-bold opacity-30 hover:opacity-100 transition-opacity active:scale-90">-</button>
+                                    <input type="number" v-model.number="form.quantita" @input="validateQty" class="bg-transparent text-center text-5xl font-black w-24 outline-none">
+                                    <button @click="updateQtyManual(1)" class="text-3xl font-bold opacity-30 hover:opacity-100 transition-opacity active:scale-90">+</button>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-darkBg p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-inner opacity-70">
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-widest">Allerta Minima</label>
+                                <input type="number" v-model.number="form.minQty" class="bg-transparent text-center text-4xl font-black w-20 outline-none">
+                            </div>
+                        </div>
+
+                        <div class="space-y-1">
+                            <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-widest">Note e Sinonimi</label>
+                            <textarea v-model="form.note" placeholder="Inserisci note tecniche..." class="w-full bg-slate-50 dark:bg-darkBg p-6 rounded-2xl outline-none text-xs italic min-h-[120px] shadow-inner border border-transparent focus:border-riva"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-4 mt-12">
+                        <button v-if="editingId" @click="deleteItem" class="px-8 py-5 text-riva font-black text-[10px] uppercase tracking-widest hover:bg-red-50 rounded-2xl">Elimina</button>
+                        <button @click="saveItem" class="flex-1 bg-riva text-white py-6 rounded-[2rem] font-black uppercase text-[12px] tracking-[0.2em] shadow-xl shadow-riva/30 active:scale-95 transition-all">Salva Informazioni</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- MODALE IMPOSTAZIONI GIALLO -->
+    <transition name="list">
+        <div v-if="isSettingsModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="isSettingsModalOpen = false">
+            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3rem] p-10 border border-white/10 shadow-2xl">
+                <h2 class="text-xl font-black mb-8 uppercase tracking-widest text-center italic">Impostazioni</h2>
+                <div class="p-8 bg-slate-50 dark:bg-darkBg rounded-[2rem] shadow-inner text-center border border-slate-100 dark:border-slate-800">
+                    <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-4 italic">Soglia Pre-Allerta (Giallo)</label>
+                    <div class="flex items-center justify-center gap-8">
+                        <button @click="settings.yellowBuffer > 0 && settings.yellowBuffer--" class="text-3xl font-bold opacity-30 hover:opacity-100 transition-opacity">-</button>
+                        <span class="text-5xl font-black italic text-orange-500 leading-none">{{ settings.yellowBuffer }}</span>
+                        <button @click="settings.yellowBuffer++" class="text-3xl font-bold opacity-30 hover:opacity-100 transition-opacity">+</button>
+                    </div>
+                    <p class="text-[9px] mt-8 text-slate-400 italic">L'articolo diventa giallo quando la giacenza è a {{ settings.yellowBuffer }} pezzi dalla sottoscorta.</p>
+                </div>
+                <button @click="isSettingsModalOpen = false" class="w-full bg-riva text-white mt-8 py-5 rounded-2xl font-black uppercase text-[11px] shadow-lg tracking-widest active:scale-95 transition-all">Applica Modifiche</button>
+            </div>
+        </div>
+    </transition>
+
+    <!-- SUPPORTO -->
+    <transition name="list">
+        <div v-if="showContact" class="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl" @click="showContact = false">
+            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3.5rem] p-10 text-center shadow-2xl border border-white/5" @click.stop>
+                <div class="w-full mb-10 flex justify-center h-28 bg-white rounded-3xl p-6 border shadow-inner">
+                    <img src="logo_elettricamente.png" alt="Elettricamente" class="max-h-full max-w-full object-contain">
+                </div>
+                <h2 class="text-2xl font-black tracking-tighter mb-1 uppercase">Riccardo Trabucchi</h2>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 italic">Tecnico</p>
+                <div class="text-left space-y-4 bg-slate-50 dark:bg-darkBg p-8 rounded-[2.5rem] border shadow-inner">
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Email Diretta</p>
+                    <p class="font-extrabold text-sm lowercase mb-4">trabucchiriccardo@gmail.com</p>
+                    <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Cellulare</p>
+                    <a href="tel:+393888877048" class="font-black text-2xl text-riva hover:underline transition-all tracking-tighter">+39 388 887 7048</a>
+                </div>
+                <button @click="showContact = false" class="mt-10 text-[9px] font-black uppercase opacity-20 underline tracking-widest">Chiudi</button>
+            </div>
+        </div>
+    </transition>
+
+    <!-- CATEGORIE MODAL (OMESSO PER BREVITA', PRESENTE NEL CODICE FUNZIONANTE) -->
+    <transition name="list">
+        <div v-if="isCatModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="isCatModalOpen = false">
+            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3rem] p-10 shadow-2xl border border-white/10">
+                <h2 class="text-lg font-black mb-8 uppercase tracking-widest text-center italic">Configura Categorie</h2>
+                <div class="space-y-3 mb-8 max-h-[40vh] overflow-y-auto no-scrollbar pr-2">
+                    <div v-for="(cat, index) in categories" :key="index" class="flex items-center gap-4 bg-slate-50 dark:bg-darkBg p-5 rounded-[1.5rem] border border-slate-100 dark:border-slate-800 transition-all hover:border-riva/30 group">
+                        <span class="text-2xl group-hover:scale-125 transition-transform">{{ cat.icon }}</span>
+                        <span class="flex-1 font-extrabold text-[10px] uppercase tracking-widest">{{ cat.name }}</span>
+                        <button @click="removeCategory(index)" class="text-riva font-bold px-2 hover:scale-150 transition-transform">✕</button>
+                    </div>
+                </div>
+                <div class="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
+                    <div class="flex gap-2">
+                        <input v-model="newCat.icon" type="text" placeholder="Ic." class="w-16 bg-slate-50 dark:bg-darkBg p-4 rounded-2xl text-center shadow-inner font-bold outline-none">
+                        <input v-model="newCat.name" type="text" placeholder="NOME..." class="flex-1 bg-slate-50 dark:bg-darkBg p-4 rounded-2xl font-black text-[10px] uppercase shadow-inner outline-none">
+                    </div>
+                    <button @click="addCategory" class="w-full bg-black text-white py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg">+ Aggiungi</button>
+                </div>
+            </div>
+        </div>
+    </transition>
+
+    <!-- FOOTER -->
+    <footer class="p-12 text-center mt-auto">
+        <button @click="showContact = true" class="text-[9px] font-black opacity-10 uppercase tracking-[1em] hover:opacity-100 transition-all">
+            Sviluppato da Elettricamente per Riva Alimentari
+        </button>
+    </footer>
+
+</div>
+
+<script>
+    const { createApp, ref, computed, onMounted, watch } = Vue;
+
+    createApp({
+        setup() {
+            const searchQuery = ref('');
+            const filterCat = ref('all');
+            const filterLow = ref(false);
+            const sortBy = ref('nome');
+            const isDarkMode = ref(false);
+            const isMenuOpen = ref(false);
+            const isModalOpen = ref(false);
+            const isCatModalOpen = ref(false);
+            const isSettingsModalOpen = ref(false);
+            const showContact = ref(false);
+            const editingId = ref(null);
+            
+            const settings = ref({ yellowBuffer: 3 });
+            const categories = ref([
+                { name: 'Meccanica', icon: '⚙️' },
+                { name: 'Elettrica', icon: '⚡' },
+                { name: 'Ferramenta', icon: '🔩' },
+                { name: 'Pneumatica', icon: '🌬️' }
+            ]);
+            
+            const newCat = ref({ name: '', icon: '' });
+            const items = ref([]);
+            const form = ref({ id: null, codice: '', nome: '', fornitore: '', impianto: '', posizione: '', quantita: 0, minQty: 1, note: '', tag: '', foto: '' });
+
+            onMounted(() => {
+                const savedItems = localStorage.getItem('riva_items');
+                const savedCats = localStorage.getItem('riva_cats');
+                const savedSettings = localStorage.getItem('riva_settings');
+                if (savedItems) items.value = JSON.parse(savedItems);
+                if (savedCats) categories.value = JSON.parse(savedCats);
+                if (savedSettings) settings.value = JSON.parse(savedSettings);
+                if (localStorage.getItem('riva_dark') === 'true') {
+                    isDarkMode.value = true;
+                    document.documentElement.classList.add('dark');
+                }
+            });
+
+            watch([items, categories, settings], () => {
+                localStorage.setItem('riva_items', JSON.stringify(items.value));
+                localStorage.setItem('riva_cats', JSON.stringify(categories.value));
+                localStorage.setItem('riva_settings', JSON.stringify(settings.value));
+            }, { deep: true });
+
+            const toggleDarkMode = () => {
+                isDarkMode.value = !isDarkMode.value;
+                document.documentElement.classList.toggle('dark');
+                localStorage.setItem('riva_dark', isDarkMode.value);
+            };
+
+            const validateQty = () => { if (form.value.quantita < 0) form.value.quantita = 0; };
+            const updateQtyManual = (val) => { form.value.quantita = Math.max(0, form.value.quantita + val); };
+
+            const getQtyColor = (item) => {
+                const qty = item.quantita;
+                const min = item.minQty;
+                const buffer = settings.value.yellowBuffer;
+                if (qty <= min) return 'text-riva';
+                if (qty <= (min + buffer)) return 'text-orange-500 font-bold';
+                return 'text-green-600';
+            };
+
+            const getIcon = (tagName) => categories.value.find(c => c.name === tagName)?.icon || '🛠️';
+
+            const filteredItems = computed(() => {
+                let results = [...items.value];
+                if (filterLow.value) results = results.filter(i => i.quantita <= i.minQty);
+                if (filterCat.value !== 'all') results = results.filter(i => i.tag === filterCat.value);
+                if (searchQuery.value) {
+                    const fuse = new Fuse(results, { keys: ['codice', 'nome', 'posizione', 'note', 'impianto', 'fornitore'], threshold: 0.3 });
+                    results = fuse.search(searchQuery.value).map(r => r.item);
+                }
+                results.sort((a, b) => {
+                    if (sortBy.value === 'qty-asc') return a.quantita - b.quantita;
+                    if (sortBy.value === 'qty-desc') return b.quantita - a.quantita;
+                    return a.nome.localeCompare(b.nome);
+                });
+                return results;
+            });
+
+            const resetFilters = () => { searchQuery.value = ''; filterCat = 'all'; filterLow = false; };
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 500;
+                        const scaleSize = MAX_WIDTH / img.width;
+                        canvas.width = MAX_WIDTH;
+                        canvas.height = img.height * scaleSize;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        form.value.foto = canvas.toDataURL('image/jpeg', 0.8);
+                    };
+                };
+                reader.readAsDataURL(file);
+            };
+
+            const openCatModal = () => { isMenuOpen.value = false; isCatModalOpen.value = true; };
+            const addCategory = () => {
+                if (newCat.value.name) {
+                    categories.value.push({ name: newCat.value.name.toUpperCase(), icon: newCat.value.icon || '🛠️' });
+                    newCat.value = { name: '', icon: '' };
+                }
+            };
+            const removeCategory = (index) => { if (confirm("Eliminare?")) categories.value.splice(index, 1); };
+
+            const openAddModal = () => {
+                editingId.value = null;
+                form.value = { id: null, codice: '', nome: '', fornitore: '', impianto: '', posizione: '', quantita: 0, minQty: 1, note: '', tag: categories.value[0]?.name || '', foto: '' };
+                isModalOpen.value = true;
+            };
+
+            const openEditModal = (item) => {
+                editingId.value = item.id;
+                form.value = { ...item };
+                isModalOpen.value = true;
+            };
+
+            const closeModal = () => isModalOpen.value = false;
+
+            const saveItem = () => {
+                if (!form.value.nome) { alert("Nome necessario"); return; }
+                validateQty();
+                if (editingId.value) {
+                    const idx = items.value.findIndex(i => i.id === editingId.value);
+                    items.value[idx] = { ...form.value };
+                } else {
+                    items.value.unshift({ ...form.value, id: Date.now() });
+                }
+                closeModal();
+            };
+
+            const deleteItem = () => {
+                if (confirm("Rimuovere definitivamente?")) {
+                    items.value = items.value.filter(i => i.id !== editingId.value);
+                    closeModal();
+                }
+            };
+
+            const exportData = () => {
+                const blob = new Blob([JSON.stringify({items: items.value, categories: categories.value, settings: settings.value}, null, 2)], {type: 'application/json'});
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `backup_magazzino_riva.json`;
+                a.click();
+            };
+
+            const importFile = (e) => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        if (file.name.endsWith('.json')) {
+                            const data = JSON.parse(event.target.result);
+                            if (data.items) items.value = data.items;
+                            if (data.categories) categories.value = data.categories;
+                        } else {
+                            const wb = XLSX.read(new Uint8Array(event.target.result), {type: 'array'});
+                            const sheet = wb.Sheets[wb.SheetNames[0]];
+                            // Importazione POSIZIONALE (header: 1 restituisce un array di array)
+                            const data = XLSX.utils.sheet_to_json(sheet, {header: 1});
+                            
+                            // Saltiamo la prima riga (header) e mappiamo le posizioni
+                            const mapped = data.slice(1).map((row, i) => {
+                                if (!row[1]) return null; // Salta righe vuote
+                                return {
+                                    id: Date.now() + i,
+                                    codice: row[0] || "",
+                                    nome: row[1] || "N/A",
+                                    fornitore: row[2] || "",
+                                    impianto: row[3] || "",
+                                    posizione: row[4] || "N/A",
+                                    quantita: (String(row[5]).toUpperCase() === 'SI' || String(row[5]).toUpperCase() === 'SÌ') ? 1 : 0,
+                                    minQty: 1,
+                                    note: row[7] || "",
+                                    tag: categories.value[0]?.name || '',
+                                    foto: ""
+                                };
+                            }).filter(x => x !== null);
+                            
+                            if(confirm(`Trovati ${mapped.length} articoli. Caricare nel database?`)) {
+                                items.value = mapped;
+                            }
+                        }
+                    } catch (err) { alert("Errore file. Controlla il formato."); }
+                };
+                if (file.name.endsWith('.json')) reader.readAsText(file);
+                else reader.readAsArrayBuffer(file);
+            };
+
+            const resetData = () => { if(confirm("CANCELLARE TUTTO?")) { localStorage.clear(); location.reload(); } };
+
+            return { 
+                searchQuery, filterCat, filterLow, sortBy, categories, items, isDarkMode, isMenuOpen, isModalOpen, isCatModalOpen, isSettingsModalOpen, showContact, form, newCat, editingId, filteredItems, settings,
+                toggleDarkMode, getIcon, handleImageUpload, openCatModal, addCategory, removeCategory, openAddModal, openEditModal, closeModal, saveItem, deleteItem, exportData, importFile, resetData, getQtyColor, validateQty, updateQtyManual, resetFilters
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
