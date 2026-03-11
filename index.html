@@ -34,6 +34,9 @@
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #334155; }
 
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
         .cat-glow:hover {
             filter: drop-shadow(0 0 10px rgba(227, 6, 19, 0.4));
             transform: translateY(-2px);
@@ -55,6 +58,12 @@
         .fab-text { opacity: 0; width: 0; white-space: nowrap; transition: opacity 0.3s; }
 
         input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* Fix per i tasti quantità su schermi molto piccoli */
+        @media (max-width: 380px) {
+            .qty-controls { gap: 1rem !important; }
+            .qty-input { width: 3rem !important; font-size: 2rem !important; }
+        }
     </style>
 </head>
 <body class="bg-slate-50 dark:bg-darkBg text-slate-900 dark:text-slate-100 font-sans transition-colors duration-300">
@@ -63,22 +72,22 @@
     
     <!-- HEADER -->
     <nav class="sticky top-0 z-50 bg-white/80 dark:bg-darkBg/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800">
-        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-                <img src="logo_riva.png" alt="Riva Luciano" class="h-10 md:h-12 w-auto object-contain shrink-0">
+        <div class="max-w-7xl mx-auto px-4 md:px-6 h-20 flex items-center justify-between">
+            <div class="flex items-center gap-3 md:gap-4">
+                <img src="logo_riva.png" alt="Riva Luciano" class="h-8 md:h-12 w-auto object-contain shrink-0">
                 <div class="h-8 w-px bg-slate-200 dark:bg-slate-700 hidden sm:block"></div>
                 <div class="hidden lg:block">
-                    <h1 class="text-[10px] font-black uppercase tracking-widest text-riva italic uppercase">RIVA ALIMENTARI</h1>
+                    <h1 class="text-[10px] font-black uppercase tracking-widest text-riva italic">RIVA ALIMENTARI</h1>
                     <p class="text-[8px] font-bold opacity-40 uppercase tracking-widest">Gestione magazzino officina</p>
                 </div>
             </div>
 
-            <div class="flex items-center gap-3">
-                <button @click.stop="toggleDarkMode" class="p-3 rounded-2xl bg-white dark:bg-darkCard shadow-sm border border-slate-100 dark:border-slate-700">
+            <div class="flex items-center gap-2 md:gap-3">
+                <button @click.stop="toggleDarkMode" class="p-2.5 md:p-3 rounded-2xl bg-white dark:bg-darkCard shadow-sm border border-slate-100 dark:border-slate-700">
                     {{ isDarkMode ? '☀️' : '🌙' }}
                 </button>
                 <div class="relative">
-                    <button @click.stop="isMenuOpen = !isMenuOpen" class="bg-riva text-white px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg active:scale-95 transition-all">
+                    <button @click.stop="isMenuOpen = !isMenuOpen" class="bg-riva text-white px-4 md:px-6 py-2.5 md:py-3 rounded-2xl text-[10px] md:text-[11px] font-black uppercase tracking-widest flex items-center gap-2 shadow-lg active:scale-95 transition-all">
                         Menu <span>▼</span>
                     </button>
                     <transition name="list">
@@ -103,38 +112,38 @@
     <main class="flex-grow max-w-7xl mx-auto w-full p-4 md:p-8 pb-40">
         
         <!-- RICERCA E FILTRI AVANZATI -->
-        <section class="mb-12 text-center">
-            <div class="relative max-w-3xl mx-auto group mb-8">
-                <input v-model="searchQuery" type="text" placeholder="Cerca codice, descrizione, impianto o cassetta..." 
-                class="w-full bg-white dark:bg-darkCard p-6 pl-16 rounded-[2.5rem] shadow-xl border border-slate-200 dark:border-slate-700 outline-none transition-all text-xl font-medium focus:border-riva group-hover:border-riva/30">
-                <span class="absolute left-7 top-7 text-2xl opacity-20 font-bold group-focus-within:opacity-100 transition-opacity">🔍</span>
+        <section class="mb-8 md:mb-12 text-center">
+            <div class="relative max-w-3xl mx-auto group mb-6 md:mb-8">
+                <input v-model="searchQuery" type="text" placeholder="Cerca codice, nome, impianto o cassetta..." 
+                class="w-full bg-white dark:bg-darkCard p-5 md:p-6 pl-14 md:pl-16 rounded-[2rem] md:rounded-[2.5rem] shadow-xl border border-slate-200 dark:border-slate-700 outline-none transition-all text-lg md:text-xl font-medium focus:border-riva group-hover:border-riva/30">
+                <span class="absolute left-6 md:left-7 top-5 md:top-7 text-xl md:text-2xl opacity-20 font-bold group-focus-within:opacity-100 transition-opacity">🔍</span>
             </div>
 
             <!-- FILTRI CATEGORIE VELOCI -->
-            <div class="flex flex-wrap justify-center gap-3 mb-8">
-                <button @click="filterCat = 'all'" :class="filterCat === 'all' ? 'bg-riva text-white shadow-lg' : 'bg-white dark:bg-darkCard text-slate-400 border border-slate-200'" class="cat-glow px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.1em] transition-all border">Tutti</button>
-                <button v-for="cat in categories" @click="filterCat = cat.name" :class="filterCat === cat.name ? 'bg-riva text-white shadow-lg shadow-riva/20' : 'bg-white dark:bg-darkCard text-slate-400 border border-slate-200'" class="cat-glow px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-[0.1em] transition-all border flex items-center gap-2">
+            <div class="flex flex-wrap justify-center gap-2 md:gap-3 mb-6 md:mb-8">
+                <button @click="filterCat = 'all'" :class="filterCat === 'all' ? 'bg-riva text-white shadow-lg' : 'bg-white dark:bg-darkCard text-slate-400 border border-slate-200'" class="cat-glow px-4 md:px-6 py-2.5 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] transition-all border">Tutti</button>
+                <button v-for="cat in categories" @click="filterCat = cat.name" :class="filterCat === cat.name ? 'bg-riva text-white shadow-lg shadow-riva/20' : 'bg-white dark:bg-darkCard text-slate-400 border border-slate-200'" class="cat-glow px-4 md:px-6 py-2.5 md:py-3 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-[0.1em] transition-all border flex items-center gap-2">
                     <span>{{ cat.icon }}</span> {{ cat.name }}
                 </button>
             </div>
 
             <!-- DROPDOWN FILTRI CASSETTA / IMPIANTO / ORDINE -->
-            <div class="flex flex-wrap justify-center items-center gap-4 bg-white dark:bg-darkCard p-6 rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm max-w-5xl mx-auto">
-                <div class="flex flex-col items-start gap-1 flex-1 min-w-[150px]">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 bg-white dark:bg-darkCard p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-200 dark:border-slate-700 shadow-sm max-w-5xl mx-auto">
+                <div class="flex flex-col items-start gap-1">
                     <span class="text-[9px] font-black uppercase opacity-40 ml-2 italic">Filtra Cassetta:</span>
                     <select v-model="filterPos" class="w-full bg-slate-50 dark:bg-darkBg p-3 rounded-xl text-[11px] font-bold uppercase outline-none border border-transparent focus:border-riva/30 appearance-none">
                         <option value="all">Tutte le Cassette</option>
                         <option v-for="pos in uniquePositions" :key="pos" :value="pos">Cassetta {{ pos }}</option>
                     </select>
                 </div>
-                <div class="flex flex-col items-start gap-1 flex-1 min-w-[150px]">
+                <div class="flex flex-col items-start gap-1">
                     <span class="text-[9px] font-black uppercase opacity-40 ml-2 italic">Filtra Impianto:</span>
                     <select v-model="filterImp" class="w-full bg-slate-50 dark:bg-darkBg p-3 rounded-xl text-[11px] font-bold uppercase outline-none border border-transparent focus:border-riva/30 appearance-none">
                         <option value="all">Tutti gli Impianti</option>
                         <option v-for="imp in uniquePlants" :key="imp" :value="imp">{{ imp }}</option>
                     </select>
                 </div>
-                <div class="flex flex-col items-start gap-1 flex-1 min-w-[150px]">
+                <div class="flex flex-col items-start gap-1">
                     <span class="text-[9px] font-black uppercase opacity-40 ml-2 italic">Ordina Per:</span>
                     <select v-model="sortBy" class="w-full bg-slate-50 dark:bg-darkBg p-3 rounded-xl text-[11px] font-bold uppercase outline-none border border-transparent focus:border-riva/30 appearance-none">
                         <option value="nome">Nome A-Z</option>
@@ -142,16 +151,16 @@
                         <option value="qty-desc">Quantità Decrescente</option>
                     </select>
                 </div>
-                <button @click="filterLow = !filterLow" :class="filterLow ? 'bg-riva text-white shadow-lg' : 'bg-slate-100 dark:bg-darkBg text-slate-400'" class="h-11 px-8 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all self-end mb-0.5">
+                <button @click="filterLow = !filterLow" :class="filterLow ? 'bg-riva text-white shadow-lg' : 'bg-slate-100 dark:bg-darkBg text-slate-400'" class="h-11 px-4 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all self-end mb-0.5">
                     ⚠️ Sottoscorta
                 </button>
             </div>
         </section>
 
         <!-- GRIGLIA ARTICOLI -->
-        <transition-group name="list" tag="div" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <transition-group name="list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
             <div v-for="item in filteredItems" :key="item.id" @click="openEditModal(item)" 
-            class="bg-white dark:bg-darkCard p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 hover:border-riva/40 hover:shadow-2xl transition-all group cursor-pointer flex flex-col justify-between shadow-sm">
+            class="bg-white dark:bg-darkCard p-5 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-slate-100 dark:border-slate-800 hover:border-riva/40 hover:shadow-2xl transition-all group cursor-pointer flex flex-col justify-between shadow-sm">
                 
                 <div>
                     <div class="flex justify-between items-start mb-4">
@@ -180,108 +189,112 @@
         </transition-group>
 
         <!-- EMPTY STATE -->
-        <div v-if="filteredItems.length === 0" class="text-center py-40">
-            <div class="text-7xl mb-6 opacity-10">🔍</div>
+        <div v-if="filteredItems.length === 0" class="text-center py-20 md:py-40">
+            <div class="text-6xl md:text-7xl mb-6 opacity-10">🔍</div>
             <p class="text-[11px] font-black uppercase tracking-[0.5em] opacity-30 italic">Nessun componente trovato</p>
             <button @click="resetFilters" class="mt-8 text-riva text-[10px] font-black uppercase underline tracking-widest">Azzera tutti i filtri</button>
         </div>
     </main>
 
     <!-- FAB AGGIUNGI ARTICOLO -->
-    <div class="fixed bottom-10 right-10 z-40">
-        <button @click="openAddModal" class="fab-container flex items-center bg-riva text-white h-16 rounded-[2rem] shadow-2xl shadow-riva/40 overflow-hidden group border-4 border-white dark:border-darkBg">
-            <div class="plus-icon w-16 h-16 flex items-center justify-center text-4xl font-light shrink-0 transition-transform duration-500">
+    <div class="fixed bottom-6 right-6 md:bottom-10 md:right-10 z-40">
+        <button @click="openAddModal" class="fab-container flex items-center bg-riva text-white h-14 md:h-16 rounded-[1.8rem] md:rounded-[2rem] shadow-2xl shadow-riva/40 overflow-hidden group border-4 border-white dark:border-darkBg">
+            <div class="plus-icon w-14 md:w-16 h-14 md:h-16 flex items-center justify-center text-3xl md:text-4xl font-light shrink-0 transition-transform duration-500">
                 +
             </div>
             <span class="fab-text text-[11px] font-black uppercase tracking-widest pr-8">Aggiungi Articolo</span>
         </button>
     </div>
 
-    <!-- MODALE SCHEDA TECNICA (COMPLETA) -->
+    <!-- MODALE SCHEDA TECNICA -->
     <transition name="list">
-        <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="closeModal">
-            <div class="bg-white dark:bg-darkCard w-full max-w-2xl rounded-[3.5rem] shadow-2xl overflow-hidden border border-white/10 animate-in zoom-in-95 duration-300">
-                <div class="p-8 md:p-12 max-h-[90vh] overflow-y-auto no-scrollbar">
-                    <div class="flex justify-between items-start mb-8">
-                        <div>
-                            <h2 class="text-xl font-extrabold uppercase tracking-tighter italic">{{ editingId ? 'Modifica Scheda' : 'Registra Nuovo' }}</h2>
-                            <p class="text-[9px] font-black text-riva uppercase tracking-widest mt-1">Riva Stock Management</p>
+        <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-4 bg-slate-900/80 backdrop-blur-md" @click.self="closeModal">
+            <div class="bg-white dark:bg-darkCard w-full max-w-2xl rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl overflow-hidden border border-white/10 animate-in zoom-in-95 duration-300">
+                <div class="p-6 md:p-12 max-h-[90vh] overflow-y-auto no-scrollbar">
+                    <div class="flex justify-between items-start mb-6 md:mb-8">
+                        <div class="max-w-[80%]">
+                            <h2 class="text-lg md:text-xl font-extrabold uppercase tracking-tighter italic leading-tight break-words">
+                                {{ editingId ? form.nome : 'Registra Nuovo Articolo' }}
+                            </h2>
+                            <p class="text-[9px] font-black text-riva uppercase tracking-widest mt-1">Scheda Tecnica Riva Stock</p>
                         </div>
-                        <button @click="closeModal" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-2xl shadow-sm">&times;</button>
+                        <button @click="closeModal" class="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-2xl shadow-sm">&times;</button>
                     </div>
 
                     <div class="space-y-6">
                         <!-- Area Foto -->
-                        <div class="aspect-video bg-slate-50 dark:bg-darkBg rounded-[2.5rem] border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center relative cursor-pointer overflow-hidden group shadow-inner">
+                        <div class="aspect-video bg-slate-50 dark:bg-darkBg rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center relative cursor-pointer overflow-hidden group shadow-inner">
                             <img v-if="form.foto" :src="form.foto" class="w-full h-full object-cover">
                             <div v-else class="text-center opacity-30">
-                                <span class="text-5xl">📸</span>
-                                <p class="text-[10px] font-black mt-3 uppercase tracking-widest">Allega Foto</p>
+                                <span class="text-4xl md:text-5xl">📸</span>
+                                <p class="text-[9px] md:text-[10px] font-black mt-3 uppercase tracking-widest">Allega Foto Componente</p>
                             </div>
                             <input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
                         </div>
 
-                        <!-- Campi Dati (FIXATI) -->
+                        <!-- Campi Dati -->
                         <div class="space-y-4 text-left">
-                            <div class="grid grid-cols-3 gap-3">
-                                <div class="col-span-1 space-y-1">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <div class="space-y-1">
                                     <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Codice</label>
-                                    <input v-model="form.codice" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs uppercase shadow-inner">
+                                    <input v-model="form.codice" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs uppercase shadow-inner">
                                 </div>
-                                <div class="col-span-2 space-y-1">
-                                    <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Descrizione</label>
-                                    <input v-model="form.nome" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs uppercase shadow-inner">
+                                <div class="md:col-span-2 space-y-1">
+                                    <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Descrizione Prodotto</label>
+                                    <input v-model="form.nome" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs uppercase shadow-inner">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div class="space-y-1">
                                     <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Fornitore</label>
-                                    <input v-model="form.fornitore" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner">
+                                    <input v-model="form.fornitore" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner uppercase">
                                 </div>
                                 <div class="space-y-1">
-                                    <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Impianto</label>
-                                    <input v-model="form.impianto" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner">
+                                    <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Impianto di Destinazione</label>
+                                    <input v-model="form.impianto" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner uppercase">
                                 </div>
                             </div>
-                            <div class="grid grid-cols-2 gap-3">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div class="space-y-1">
                                     <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Cassetta / Posizione</label>
-                                    <input v-model="form.posizione" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner uppercase tracking-widest">
+                                    <input v-model="form.posizione" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl outline-none border border-transparent focus:border-riva font-bold text-xs shadow-inner uppercase tracking-widest">
                                 </div>
                                 <div class="space-y-1">
                                     <label class="text-[9px] font-black uppercase ml-2 text-slate-400">Categoria</label>
-                                    <select v-model="form.tag" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl outline-none border border-transparent focus:border-riva font-black text-[10px] uppercase shadow-inner appearance-none transition-colors">
+                                    <select v-model="form.tag" class="w-full bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl outline-none border border-transparent focus:border-riva font-black text-[10px] uppercase shadow-inner appearance-none transition-colors">
                                         <option v-for="cat in categories" :value="cat.name">{{ cat.icon }} {{ cat.name }}</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Quantità -->
-                        <div class="grid grid-cols-2 gap-6">
-                            <div class="bg-slate-50 dark:bg-darkBg p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-inner">
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-widest text-center">Giacenza</label>
-                                <div class="flex items-center gap-8">
-                                    <button @click="updateQtyManual(-1)" class="text-3xl font-bold opacity-30 hover:opacity-100 active:scale-90">-</button>
-                                    <input type="number" v-model.number="form.quantita" @input="validateQty" class="bg-transparent text-center text-5xl font-black w-24 outline-none">
-                                    <button @click="updateQtyManual(1)" class="text-3xl font-bold opacity-30 hover:opacity-100 active:scale-90">+</button>
+                        <!-- Quantità - FIX SMARTPHONE -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
+                            <div class="bg-slate-50 dark:bg-darkBg p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-inner">
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-4 md:mb-6 tracking-widest text-center">Giacenza Attuale</label>
+                                <div class="flex items-center justify-between w-full max-w-[180px] qty-controls">
+                                    <button @click="updateQtyManual(-1)" class="w-10 h-10 flex items-center justify-center text-3xl font-bold opacity-30 hover:opacity-100 active:scale-90 transition-all">-</button>
+                                    <input type="number" v-model.number="form.quantita" @input="validateQty" class="qty-input bg-transparent text-center text-4xl md:text-5xl font-black w-16 md:w-24 outline-none">
+                                    <button @click="updateQtyManual(1)" class="w-10 h-10 flex items-center justify-center text-3xl font-bold opacity-30 hover:opacity-100 active:scale-90 transition-all">+</button>
                                 </div>
                             </div>
-                            <div class="bg-slate-50 dark:bg-darkBg p-8 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-inner opacity-70">
-                                <label class="text-[10px] font-black text-slate-400 uppercase mb-6 tracking-widest text-center">Sottoscorta</label>
-                                <input type="number" v-model.number="form.minQty" class="bg-transparent text-center text-4xl font-black w-20 outline-none">
+                            <div class="bg-slate-50 dark:bg-darkBg p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-inner opacity-70">
+                                <label class="text-[10px] font-black text-slate-400 uppercase mb-4 md:mb-6 tracking-widest text-center">Soglia Minima</label>
+                                <div class="flex items-center justify-center w-full">
+                                    <input type="number" v-model.number="form.minQty" class="bg-transparent text-center text-3xl md:text-4xl font-black w-20 outline-none">
+                                </div>
                             </div>
                         </div>
 
                         <div class="space-y-1">
                             <label class="text-[9px] font-black uppercase ml-4 text-slate-400">Note Manutenzione</label>
-                            <textarea v-model="form.note" placeholder="Note tecniche..." class="w-full bg-slate-50 dark:bg-darkBg p-6 rounded-2xl outline-none text-xs italic min-h-[100px] shadow-inner border border-transparent focus:border-riva"></textarea>
+                            <textarea v-model="form.note" placeholder="Inserisci note tecniche o riferimenti..." class="w-full bg-slate-50 dark:bg-darkBg p-4 md:p-6 rounded-2xl outline-none text-xs italic min-h-[100px] shadow-inner border border-transparent focus:border-riva"></textarea>
                         </div>
                     </div>
 
-                    <div class="flex gap-4 mt-12">
-                        <button v-if="editingId" @click="deleteItem" class="px-8 py-5 text-riva font-black text-[10px] uppercase hover:bg-red-50 rounded-2xl">Elimina</button>
-                        <button @click="saveItem" class="flex-1 bg-riva text-white py-6 rounded-[2rem] font-black uppercase text-[12px] shadow-xl active:scale-95 transition-all">Archivia Scheda</button>
+                    <div class="flex flex-col md:flex-row gap-3 md:gap-4 mt-8 md:mt-12">
+                        <button v-if="editingId" @click="deleteItem" class="order-2 md:order-1 px-8 py-4 text-riva font-black text-[10px] uppercase hover:bg-red-50 rounded-2xl transition-colors">Elimina Articolo</button>
+                        <button @click="saveItem" class="order-1 md:order-2 flex-1 bg-riva text-white py-5 md:py-6 rounded-[1.5rem] md:rounded-[2rem] font-black uppercase text-[11px] md:text-[12px] shadow-xl active:scale-95 transition-all">Salva Modifiche</button>
                     </div>
                 </div>
             </div>
@@ -291,74 +304,74 @@
     <!-- MODALE SUPPORTO TECNICO -->
     <transition name="list">
         <div v-if="showContact" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl" @click.stop="showContact = false">
-            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3.5rem] p-10 text-center shadow-2xl border border-white/5" @click.stop>
-                <div class="w-full mb-10 flex justify-center">
-                    <div class="h-28 w-full flex items-center justify-center bg-white rounded-3xl p-6 border border-slate-100 shadow-inner">
+            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3rem] p-8 md:p-10 text-center shadow-2xl border border-white/5" @click.stop>
+                <div class="w-full mb-8 md:mb-10 flex justify-center">
+                    <div class="h-24 md:h-28 w-full flex items-center justify-center bg-white rounded-3xl p-6 border border-slate-100 shadow-inner">
                         <img src="logo_elettricamente.png" alt="Elettricamente" class="max-h-full max-w-full object-contain">
                     </div>
                 </div>
                 
-                <h2 class="text-2xl font-black tracking-tighter mb-1 uppercase">Riccardo Trabucchi</h2>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-10 italic">Tecnico</p>
+                <h2 class="text-xl md:text-2xl font-black tracking-tighter mb-1 uppercase">Riccardo Trabucchi</h2>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8 md:mb-10 italic">Responsabile Tecnico</p>
                 
-                <div class="text-left space-y-6 bg-slate-50 dark:bg-darkBg p-8 rounded-[2.5rem] border border-slate-100 shadow-inner">
+                <div class="text-left space-y-6 bg-slate-50 dark:bg-darkBg p-6 md:p-8 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-inner">
                     <div>
-                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Email Diretta</p>
-                        <p class="font-extrabold text-sm lowercase italic">trabucchiriccardo@gmail.com</p>
+                        <p class="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Email</p>
+                        <p class="font-extrabold text-xs md:text-sm lowercase italic dark:text-slate-300">trabucchiriccardo@gmail.com</p>
                     </div>
                     <div>
-                        <p class="text-[9px] font-black text-slate-300 uppercase tracking-widest mb-1">Cellulare</p>
-                        <a href="tel:+393888877048" class="font-black text-xl text-riva hover:underline transition-all tracking-tighter">+39 388 887 7048</a>
+                        <p class="text-[9px] font-black text-slate-300 dark:text-slate-600 uppercase tracking-widest mb-1">Telefono</p>
+                        <a href="tel:+393888877048" class="font-black text-lg md:text-xl text-riva hover:underline transition-all tracking-tighter">+39 388 887 7048</a>
                     </div>
                 </div>
                 
-                <button @click.stop="showContact = false" class="mt-10 text-[10px] font-black uppercase opacity-40 hover:opacity-100 underline tracking-[0.2em]">Chiudi Finestra</button>
+                <button @click.stop="showContact = false" class="mt-8 md:mt-10 text-[10px] font-black uppercase opacity-40 hover:opacity-100 underline tracking-[0.2em]">Chiudi</button>
             </div>
         </div>
     </transition>
 
-    <!-- MODALI SECONDARI (SETTINGS, CATEGORIE) -->
+    <!-- MODALI SECONDARI -->
     <transition name="list">
         <div v-if="isSettingsModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="isSettingsModalOpen = false">
-            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3rem] p-10 border border-white/10 shadow-2xl">
-                <h2 class="text-xl font-black mb-8 uppercase tracking-widest text-center italic">Impostazioni</h2>
-                <div class="p-8 bg-slate-50 dark:bg-darkBg rounded-[2rem] shadow-inner text-center border border-slate-100 dark:border-slate-800">
+            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-8 md:p-10 border border-white/10 shadow-2xl text-center">
+                <h2 class="text-xl font-black mb-8 uppercase tracking-widest italic">Impostazioni</h2>
+                <div class="p-6 md:p-8 bg-slate-50 dark:bg-darkBg rounded-[2rem] shadow-inner border border-slate-100 dark:border-slate-800">
                     <label class="text-[10px] font-black uppercase text-slate-400 tracking-widest block mb-4 italic">Buffer Allerta Gialla</label>
-                    <div class="flex items-center justify-center gap-8">
+                    <div class="flex items-center justify-center gap-6 md:gap-8">
                         <button @click="settings.yellowBuffer > 0 && settings.yellowBuffer--" class="text-3xl font-bold opacity-30 hover:opacity-100">-</button>
-                        <span class="text-5xl font-black italic text-orange-500 leading-none">{{ settings.yellowBuffer }}</span>
+                        <span class="text-4xl md:text-5xl font-black italic text-orange-500 leading-none">{{ settings.yellowBuffer }}</span>
                         <button @click="settings.yellowBuffer++" class="text-3xl font-bold opacity-30 hover:opacity-100">+</button>
                     </div>
                 </div>
-                <button @click="isSettingsModalOpen = false" class="w-full bg-riva text-white mt-8 py-5 rounded-2xl font-black uppercase text-[11px] shadow-lg">Chiudi</button>
+                <button @click="isSettingsModalOpen = false" class="w-full bg-riva text-white mt-8 py-5 rounded-2xl font-black uppercase text-[11px] shadow-lg active:scale-95 transition-all">Salva e Chiudi</button>
             </div>
         </div>
     </transition>
 
     <transition name="list">
         <div v-if="isCatModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="isCatModalOpen = false">
-            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3rem] p-10 shadow-2xl border border-white/10">
-                <h2 class="text-lg font-black mb-8 uppercase tracking-widest text-center italic">Configura Categorie</h2>
-                <div class="space-y-3 mb-8 max-h-[40vh] overflow-y-auto no-scrollbar pr-2">
-                    <div v-for="(cat, index) in categories" :key="index" class="flex items-center gap-4 bg-slate-50 dark:bg-darkBg p-5 rounded-[1.5rem] border group">
-                        <span class="text-2xl group-hover:scale-125 transition-transform">{{ cat.icon }}</span>
+            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-8 md:p-10 shadow-2xl border border-white/10">
+                <h2 class="text-lg font-black mb-8 uppercase tracking-widest text-center italic">Categorie</h2>
+                <div class="space-y-3 mb-8 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
+                    <div v-for="(cat, index) in categories" :key="index" class="flex items-center gap-4 bg-slate-50 dark:bg-darkBg p-4 md:p-5 rounded-[1.2rem] border dark:border-slate-800 group">
+                        <span class="text-xl md:text-2xl group-hover:scale-125 transition-transform">{{ cat.icon }}</span>
                         <span class="flex-1 font-extrabold text-[10px] uppercase tracking-widest dark:text-white">{{ cat.name }}</span>
                         <button @click="removeCategory(index)" class="text-riva font-bold px-2 hover:scale-150 transition-transform">✕</button>
                     </div>
                 </div>
-                <div class="space-y-4 pt-6 border-t dark:border-slate-800">
+                <div class="space-y-4 pt-6 border-t border-slate-100 dark:border-slate-800">
                     <div class="flex gap-2">
-                        <input v-model="newCat.icon" type="text" placeholder="Ic." class="w-16 bg-slate-50 dark:bg-darkBg p-4 rounded-2xl text-center shadow-inner font-bold outline-none border-none">
-                        <input v-model="newCat.name" type="text" placeholder="NOME..." class="flex-1 bg-slate-50 dark:bg-darkBg p-4 rounded-2xl font-black text-[10px] uppercase shadow-inner outline-none border-none">
+                        <input v-model="newCat.icon" type="text" placeholder="Ic." class="w-14 bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl text-center shadow-inner font-bold outline-none border-none">
+                        <input v-model="newCat.name" type="text" placeholder="NOME..." class="flex-1 bg-slate-50 dark:bg-darkBg p-3 md:p-4 rounded-xl font-black text-[10px] uppercase shadow-inner outline-none border-none">
                     </div>
-                    <button @click="addCategory" class="w-full bg-black text-white py-4 rounded-2xl font-black uppercase text-[10px] shadow-lg tracking-widest active:scale-95 transition-all">Aggiungi</button>
+                    <button @click="addCategory" class="w-full bg-black dark:bg-slate-800 text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg tracking-widest active:scale-95 transition-all">Aggiungi</button>
                 </div>
             </div>
         </div>
     </transition>
 
     <!-- FOOTER -->
-    <footer class="p-12 text-center mt-auto">
+    <footer class="p-8 md:p-12 text-center mt-auto">
         <button @click.stop="showContact = true" class="text-[9px] font-black opacity-10 uppercase tracking-[0.8em] hover:opacity-100 transition-all hover:text-riva">
             Design & Engine by Elettricamente Pro
         </button>
@@ -418,7 +431,7 @@
 
             const uniquePositions = computed(() => {
                 const pos = items.value.map(i => String(i.posizione || 'N/A')).filter(p => p !== 'N/A' && p !== '');
-                return [...new Set(pos)].sort();
+                return [...new Set(pos)].sort((a, b) => a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'}));
             });
 
             const uniquePlants = computed(() => {
@@ -433,7 +446,10 @@
             };
 
             const validateQty = () => { if (form.value.quantita < 0) form.value.quantita = 0; };
-            const updateQtyManual = (val) => { form.value.quantita = Math.max(0, form.value.quantita + val); };
+            const updateQtyManual = (val) => { 
+                const newVal = (parseInt(form.value.quantita) || 0) + val;
+                form.value.quantita = Math.max(0, newVal); 
+            };
 
             const getQtyColor = (item) => {
                 const qty = item.quantita;
@@ -456,16 +472,17 @@
                 if (searchQuery.value) {
                     const fuse = new Fuse(results, { 
                         keys: [
-                            { name: 'posizione', weight: 3.0 }, 
-                            { name: 'codice', weight: 1.0 },
-                            { name: 'nome', weight: 1.0 },
-                            { name: 'impianto', weight: 1.0 }
+                            { name: 'posizione', weight: 4.0 }, 
+                            { name: 'codice', weight: 2.0 },
+                            { name: 'nome', weight: 1.5 },
+                            { name: 'impianto', weight: 0.5 }
                         ], 
-                        threshold: 0.3,
+                        threshold: 0.35,
                         minMatchCharLength: 1 
                     });
                     results = fuse.search(searchQuery.value).map(r => r.item);
                 }
+                
                 results.sort((a, b) => {
                     if (sortBy.value === 'qty-asc') return a.quantita - b.quantita;
                     if (sortBy.value === 'qty-desc') return b.quantita - a.quantita;
@@ -491,13 +508,13 @@
                     img.src = event.target.result;
                     img.onload = () => {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 500;
+                        const MAX_WIDTH = 600;
                         const scaleSize = MAX_WIDTH / img.width;
                         canvas.width = MAX_WIDTH;
                         canvas.height = img.height * scaleSize;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        form.value.foto = canvas.toDataURL('image/jpeg', 0.8);
+                        form.value.foto = canvas.toDataURL('image/jpeg', 0.7);
                     };
                 };
                 reader.readAsDataURL(file);
@@ -510,7 +527,7 @@
                     newCat.value = { name: '', icon: '' };
                 }
             };
-            const removeCategory = (index) => { if (confirm("Eliminare categoria?")) categories.value.splice(index, 1); };
+            const removeCategory = (index) => { if (confirm("Eliminare questa categoria?")) categories.value.splice(index, 1); };
 
             const openAddModal = () => {
                 editingId.value = null;
@@ -527,7 +544,7 @@
             const closeModal = () => isModalOpen.value = false;
 
             const saveItem = () => {
-                if (!form.value.nome) { alert("Inserire nome componente."); return; }
+                if (!form.value.nome) { alert("Inserire almeno il nome del componente."); return; }
                 validateQty();
                 if (editingId.value) {
                     const idx = items.value.findIndex(i => i.id === editingId.value);
@@ -539,7 +556,7 @@
             };
 
             const deleteItem = () => {
-                if (confirm("Eliminare?")) {
+                if (confirm("Sei sicuro di voler eliminare definitivamente questo articolo?")) {
                     items.value = items.value.filter(i => i.id !== editingId.value);
                     closeModal();
                 }
@@ -550,7 +567,7 @@
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
-                a.download = `backup_RivaLuciano.json`;
+                a.download = `backup_magazzino_riva_${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
                 isMenuOpen.value = false;
             };
@@ -574,27 +591,27 @@
                                 return {
                                     id: Date.now() + i,
                                     codice: row[0] || "",
-                                    nome: row[1] || "N/A",
+                                    nome: String(row[1] || "N/A"),
                                     fornitore: row[2] || "",
                                     impianto: row[3] || "",
-                                    posizione: String(row[4] || "N/A"),
-                                    quantita: (String(row[5]).toUpperCase() === 'SI' || String(row[5]).toUpperCase() === 'SÌ') ? 1 : 0,
+                                    posizione: String(row[4] || ""),
+                                    quantita: isNaN(parseInt(row[5])) ? 0 : parseInt(row[5]),
                                     minQty: 1,
                                     note: row[7] || "",
                                     tag: categories.value[0]?.name || '',
                                     foto: ""
                                 };
                             }).filter(x => x !== null);
-                            if(confirm(`Caricare ${mapped.length} articoli?`)) items.value = mapped;
+                            if(confirm(`Importare ${mapped.length} articoli trovati?`)) items.value = [...mapped, ...items.value];
                         }
-                    } catch (err) { alert("File non valido."); }
+                    } catch (err) { alert("Errore nel caricamento del file."); }
                     isMenuOpen.value = false;
                 };
                 if (file.name.endsWith('.json')) reader.readAsText(file);
                 else reader.readAsArrayBuffer(file);
             };
 
-            const resetData = () => { if(confirm("CANCELLARE TUTTO?")) { localStorage.clear(); location.reload(); } };
+            const resetData = () => { if(confirm("ATTENZIONE: Stai per cancellare l'intero database. Procedere?")) { localStorage.clear(); location.reload(); } };
 
             return { 
                 searchQuery, filterCat, filterPos, filterImp, filterLow, sortBy, categories, items, isDarkMode, isMenuOpen, isModalOpen, isCatModalOpen, isSettingsModalOpen, showContact, form, newCat, editingId, filteredItems, settings, uniquePositions, uniquePlants,
