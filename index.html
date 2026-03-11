@@ -33,7 +33,7 @@
         
         .cat-glow:hover { filter: drop-shadow(0 0 10px rgba(227, 6, 19, 0.4)); transform: translateY(-2px); border-color: #E30613; }
         
-        /* Animazione del + (Mantenuta Originale) */
+        /* Animazione del + */
         .fab-container { width: 64px; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         @media (min-width: 1024px) {
             .fab-container:hover { width: 220px; }
@@ -42,7 +42,7 @@
         }
         .fab-text { opacity: 0; width: 0; white-space: nowrap; transition: opacity 0.3s; }
         
-        /* Nuove Animazioni fluide per la griglia */
+        /* Animazioni fluide griglia */
         .list-enter-active, .list-leave-active { transition: all 0.4s ease; }
         .list-enter-from, .list-leave-to { opacity: 0; transform: translateY(20px); }
         .list-move { transition: transform 0.4s ease; }
@@ -82,15 +82,15 @@
                         MENU <span>▼</span>
                     </button>
                     <transition name="list">
-                        <div v-if="isMenuOpen" class="absolute right-0 top-full mt-3 w-64 bg-white dark:bg-darkCard rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden z-50">
+                        <div v-if="isMenuOpen" class="absolute right-0 top-full mt-3 w-64 bg-white dark:bg-darkCard rounded-[3rem] shadow-2xl border border-slate-100 dark:border-slate-800 overflow-hidden z-50" @click.stop>
                             <button @click="exportData" class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-100 dark:border-slate-800 uppercase flex items-center gap-3"><span>📥</span> Esporta Backup</button>
                             <label class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold cursor-pointer block border-b border-slate-100 dark:border-slate-800 uppercase flex items-center gap-3">
                                 <span>📤</span> Importa Excel / JSON
                                 <input type="file" @change="importFile" class="hidden">
                             </label>
-                            <button @click.stop="openCatModal" class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-100 dark:border-slate-800 uppercase flex items-center gap-3"><span>⚙️</span> Gestisci Categorie</button>
-                            <button @click.stop="isSettingsModalOpen = true; isMenuOpen = false" class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-100 dark:border-slate-800 uppercase flex items-center gap-3"><span>🛠️</span> Soglia Pre-Allerta</button>
-                            <button @click.stop="showContact = true; isMenuOpen = false" class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold uppercase italic border-b border-slate-100 dark:border-slate-800 flex items-center gap-3"><span>👤</span> Supporto Tecnico</button>
+                            <button @click="openCatModal" class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-100 dark:border-slate-800 uppercase flex items-center gap-3"><span>⚙️</span> Gestisci Categorie</button>
+                            <button @click="isSettingsModalOpen = true; isMenuOpen = false" class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold border-b border-slate-100 dark:border-slate-800 uppercase flex items-center gap-3"><span>🛠️</span> Soglia Pre-Allerta</button>
+                            <button @click="showContact = true; isMenuOpen = false" class="w-full text-left px-7 py-4 hover:bg-slate-50 dark:hover:bg-slate-800 text-[11px] font-bold uppercase italic border-b border-slate-100 dark:border-slate-800 flex items-center gap-3"><span>👤</span> Supporto Tecnico</button>
                             <button @click="resetData" class="w-full text-left px-7 py-4 text-riva hover:bg-red-50 text-[11px] font-black uppercase flex items-center gap-3"><span>🗑️</span> Reset Totale</button>
                         </div>
                     </transition>
@@ -148,7 +148,7 @@
             </div>
         </section>
 
-        <!-- GRID ARTICOLI CON ANIMAZIONE -->
+        <!-- GRID ARTICOLI -->
         <transition-group name="list" tag="div" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             <div v-for="item in filteredItems" :key="item.id" @click="openEditModal(item)" 
             class="bg-white dark:bg-darkCard p-6 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 hover:border-riva hover:shadow-xl transition-all group cursor-pointer flex flex-col justify-between shadow-sm relative overflow-hidden active:scale-95">
@@ -181,14 +181,9 @@
                 </div>
             </div>
         </transition-group>
-        
-        <div v-if="filteredItems.length === 0" class="text-center py-20 opacity-20 animate-pulse">
-            <span class="text-6xl block mb-4">📦</span>
-            <p class="font-black uppercase tracking-widest">Nessun componente trovato</p>
-        </div>
     </main>
 
-    <!-- FAB AGGIUNGI (Animazione mantenuta) -->
+    <!-- FAB AGGIUNGI -->
     <div class="fixed bottom-8 right-8 z-40">
         <button @click="openAddModal" class="fab-container flex items-center bg-riva text-white h-16 rounded-[2rem] shadow-2xl overflow-hidden group border-4 border-white dark:border-darkBg active:scale-95">
             <div class="plus-icon w-16 h-16 flex items-center justify-center text-4xl font-light shrink-0">
@@ -198,7 +193,7 @@
         </button>
     </div>
 
-    <!-- MODALE SCHEDA (CON TITOLO DINAMICO) -->
+    <!-- MODALE SCHEDA -->
     <transition name="list">
         <div v-if="isModalOpen" class="fixed inset-0 z-[100] flex items-center justify-center p-2 md:p-4 bg-slate-900/80 backdrop-blur-md" @click.self="closeModal">
             <div class="bg-white dark:bg-darkCard w-full max-w-2xl rounded-[2.5rem] md:rounded-[3.5rem] shadow-2xl overflow-hidden border border-white/5">
@@ -215,7 +210,6 @@
                     </div>
 
                     <div class="space-y-6">
-                        <!-- FOTO -->
                         <div class="aspect-video bg-slate-50 dark:bg-darkBg rounded-[2rem] border-2 border-dashed border-slate-200 dark:border-slate-700 flex items-center justify-center relative cursor-pointer overflow-hidden shadow-inner group">
                             <img v-if="form.foto" :src="form.foto" class="w-full h-full object-cover">
                             <div v-else class="text-center opacity-30 group-hover:opacity-60 transition-opacity">
@@ -225,43 +219,41 @@
                             <input type="file" @change="handleImageUpload" class="absolute inset-0 opacity-0 cursor-pointer" accept="image/*">
                         </div>
 
-                        <!-- DATI -->
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label class="text-[9px] font-black uppercase ml-2 text-slate-400 tracking-tighter">Codice</label>
-                                <input v-model="form.codice" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner focus:ring-1 ring-riva/30 transition-all outline-none">
+                                <input v-model="form.codice" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner outline-none">
                             </div>
                             <div class="md:col-span-2">
                                 <label class="text-[9px] font-black uppercase ml-2 text-slate-400 tracking-tighter">Descrizione Prodotto</label>
-                                <input v-model="form.nome" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner focus:ring-1 ring-riva/30 transition-all outline-none">
+                                <input v-model="form.nome" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner outline-none">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-[9px] font-black uppercase ml-2 text-slate-400 tracking-tighter">Cassetta</label>
-                                <input v-model="form.posizione" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-black text-xs uppercase shadow-inner focus:ring-1 ring-riva/30 transition-all outline-none">
+                                <input v-model="form.posizione" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-black text-xs uppercase shadow-inner outline-none">
                             </div>
                             <div>
                                 <label class="text-[9px] font-black uppercase ml-2 text-slate-400 tracking-tighter">Impianto</label>
-                                <input v-model="form.impianto" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner focus:ring-1 ring-riva/30 transition-all outline-none">
+                                <input v-model="form.impianto" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner outline-none">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="text-[9px] font-black uppercase ml-2 text-slate-400 tracking-tighter">Fornitore</label>
-                                <input v-model="form.fornitore" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner focus:ring-1 ring-riva/30 transition-all outline-none">
+                                <input v-model="form.fornitore" type="text" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-bold text-xs uppercase shadow-inner outline-none">
                             </div>
                             <div>
                                 <label class="text-[9px] font-black uppercase ml-2 text-slate-400 tracking-tighter">Categoria</label>
-                                <select v-model="form.tag" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-black text-[10px] uppercase shadow-inner appearance-none focus:ring-1 ring-riva/30 transition-all outline-none cursor-pointer">
+                                <select v-model="form.tag" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-xl border-none font-black text-[10px] uppercase shadow-inner appearance-none cursor-pointer outline-none">
                                     <option v-for="cat in categories" :value="cat.name">{{ cat.icon }} {{ cat.name }}</option>
                                 </select>
                             </div>
                         </div>
 
-                        <!-- QUANTITA OTTIMIZZATA -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div class="bg-slate-50 dark:bg-darkBg p-6 rounded-[2rem] border border-slate-100 dark:border-slate-800 flex flex-col items-center shadow-inner">
                                 <label class="text-[10px] font-black text-slate-400 uppercase mb-4 tracking-widest italic">Giacenza Attuale</label>
@@ -279,7 +271,7 @@
 
                         <div>
                             <label class="text-[9px] font-black uppercase ml-4 text-slate-400 tracking-tighter">Note e Dettagli Tecniche</label>
-                            <textarea v-model="form.note" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-2xl outline-none text-xs italic min-h-[80px] shadow-inner focus:ring-1 ring-riva/30 transition-all"></textarea>
+                            <textarea v-model="form.note" class="w-full bg-slate-50 dark:bg-darkBg p-4 rounded-2xl outline-none text-xs italic min-h-[80px] shadow-inner"></textarea>
                         </div>
                     </div>
 
@@ -292,10 +284,10 @@
         </div>
     </transition>
 
-    <!-- MODALE SUPPORTO -->
+    <!-- MODALE SUPPORTO (Correzione chiusura) -->
     <transition name="list">
         <div v-if="showContact" class="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-slate-900/95 backdrop-blur-xl" @click.self="showContact = false">
-            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3.5rem] p-8 text-center shadow-2xl relative border border-white/10 transition-all">
+            <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3.5rem] p-8 text-center shadow-2xl relative border border-white/10" @click.stop>
                 <div class="h-20 w-full bg-white rounded-2xl p-4 border mb-6 flex items-center justify-center shadow-inner">
                     <img src="logo_elettricamente.png" alt="Elettricamente" class="max-h-full">
                 </div>
@@ -311,12 +303,12 @@
                         <a href="tel:+393888877048" class="font-black text-lg text-riva tracking-tighter">+39 388 887 7048</a>
                     </div>
                 </div>
-                <button @click="showContact = false" class="mt-8 px-8 py-2 bg-slate-100 dark:bg-slate-800 rounded-full text-[10px] font-black uppercase opacity-60 hover:opacity-100 transition-all active:scale-90">Chiudi</button>
+                <button @click="showContact = false" class="mt-8 px-8 py-2 bg-slate-100 dark:bg-slate-800 rounded-full text-[10px] font-black uppercase opacity-60 hover:opacity-100 transition-all">Chiudi</button>
             </div>
         </div>
     </transition>
 
-    <!-- MODALE SETTINGS -->
+    <!-- ALTRE MODALI (SETTINGS, CATEGORIE) -->
     <transition name="list">
         <div v-if="isSettingsModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="isSettingsModalOpen = false">
             <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[2.5rem] p-10 text-center shadow-2xl border border-white/10">
@@ -329,21 +321,20 @@
                         <button @click="settings.yellowBuffer++" class="text-3xl font-bold opacity-30 hover:opacity-100 active:scale-75 transition-all">+</button>
                     </div>
                 </div>
-                <button @click="isSettingsModalOpen = false" class="w-full bg-riva text-white mt-8 py-5 rounded-2xl font-black uppercase text-[11px] shadow-lg active:scale-95 transition-all">Salva e Chiudi</button>
+                <button @click="isSettingsModalOpen = false" class="w-full bg-riva text-white mt-8 py-5 rounded-2xl font-black uppercase text-[11px] shadow-lg">Chiudi</button>
             </div>
         </div>
     </transition>
 
-    <!-- MODALE CATEGORIE (FIXED) -->
     <transition name="list">
         <div v-if="isCatModalOpen" class="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md" @click.self="isCatModalOpen = false">
             <div class="bg-white dark:bg-darkCard w-full max-w-sm rounded-[3rem] p-8 shadow-2xl border border-white/10">
                 <h2 class="text-lg font-black mb-6 uppercase text-center italic dark:text-white">Categorie</h2>
                 <div class="space-y-2 mb-6 max-h-[40vh] overflow-y-auto no-scrollbar pr-1">
-                    <div v-for="(cat, index) in categories" :key="index" class="flex items-center gap-4 bg-slate-50 dark:bg-darkBg p-4 rounded-xl border dark:border-slate-800 group transition-all">
+                    <div v-for="(cat, index) in categories" :key="index" class="flex items-center gap-4 bg-slate-50 dark:bg-darkBg p-4 rounded-xl border dark:border-slate-800 group">
                         <span class="text-xl group-hover:scale-125 transition-transform">{{ cat.icon }}</span>
                         <span class="flex-1 font-extrabold text-[10px] uppercase tracking-widest dark:text-white">{{ cat.name }}</span>
-                        <button @click="removeCategory(index)" class="text-riva font-bold px-2 active:scale-75 transition-transform">✕</button>
+                        <button @click="removeCategory(index)" class="text-riva font-bold px-2">✕</button>
                     </div>
                 </div>
                 <div class="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800">
@@ -351,14 +342,14 @@
                         <input v-model="newCat.icon" type="text" placeholder="Ic." class="w-14 bg-slate-50 dark:bg-darkBg p-3 rounded-xl text-center shadow-inner outline-none">
                         <input v-model="newCat.name" type="text" placeholder="NOME..." class="flex-1 bg-slate-50 dark:bg-darkBg p-3 rounded-xl font-black text-[10px] uppercase shadow-inner outline-none">
                     </div>
-                    <button @click="addCategory" class="w-full bg-black text-white py-4 rounded-xl font-black uppercase text-[10px] active:scale-95 transition-all shadow-lg">Aggiungi</button>
+                    <button @click="addCategory" class="w-full bg-black text-white py-4 rounded-xl font-black uppercase text-[10px] shadow-lg">Aggiungi</button>
                 </div>
-                <button @click="isCatModalOpen = false" class="w-full mt-4 text-[10px] font-black opacity-40 uppercase hover:opacity-100 transition-opacity">Chiudi Finestra</button>
+                <button @click="isCatModalOpen = false" class="w-full mt-4 text-[10px] font-black opacity-40 uppercase">Chiudi</button>
             </div>
         </div>
     </transition>
 
-    <footer class="p-12 text-center mt-auto opacity-20 hover:opacity-100 transition-opacity duration-700">
+    <footer class="p-12 text-center mt-auto opacity-20 hover:opacity-100 transition-opacity">
         <button @click.stop="showContact = true" class="text-[9px] font-black opacity-40 uppercase tracking-[0.8em] hover:text-riva transition-colors">
             Design & Engine by Elettricamente Pro
         </button>
@@ -400,7 +391,6 @@
             const items = ref([]);
             const form = ref({ id: null, codice: '', nome: '', fornitore: '', impianto: '', posizione: '', quantita: 0, minQty: 1, note: '', tag: '', foto: '' });
 
-            // DEBOUNCING per la ricerca: elimina i lag su mobile con tanti pezzi
             watch(searchQuery, (newVal) => {
                 clearTimeout(searchTimeout);
                 searchTimeout = setTimeout(() => {
@@ -568,4 +558,30 @@
                                 id: Date.now() + i,
                                 codice: String(row[0] || ""),
                                 nome: String(row[1] || "N/A"),
-                                fornitor
+                                fornitore: String(row[2] || ""),
+                                impianto: String(row[3] || ""),
+                                posizione: String(row[4] || ""),
+                                quantita: (String(row[5]).toUpperCase().includes('SI')) ? 1 : 0,
+                                minQty: 1, note: String(row[7] || ""), tag: categories.value[0].name, foto: ""
+                            })).filter(x => x.nome !== "N/A");
+                            items.value = [...mapped, ...items.value];
+                        }
+                    } catch (e) { alert("Errore file"); }
+                };
+                if (file.name.endsWith('.json')) reader.readAsText(file);
+                else reader.readAsArrayBuffer(file);
+                isMenuOpen.value = false;
+            };
+
+            const resetData = () => { if(confirm("Cancellare tutto?")) { localStorage.clear(); location.reload(); } };
+
+            return { 
+                searchQuery, filterCat, filterPos, filterImp, filterLow, sortBy, categories, items, isDarkMode, isMenuOpen, isModalOpen, isCatModalOpen, isSettingsModalOpen, showContact, form, newCat, editingId, filteredItems, settings, uniquePositions, uniquePlants,
+                toggleDarkMode, getIcon, handleImageUpload, openAddModal, openEditModal, closeModal, openCatModal, addCategory, removeCategory, saveItem, deleteItem, exportData, importFile, resetData, getQtyColor, updateQtyManual
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>
