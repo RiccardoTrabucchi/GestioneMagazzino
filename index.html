@@ -69,7 +69,7 @@
                 <div class="hidden sm:block h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
                 <div>
                     <h1 class="text-[10px] font-black uppercase text-riva italic leading-none">RIVA ALIMENTARI</h1>
-                    <p class="text-[8px] font-bold opacity-40 uppercase tracking-[0.2em] hidden sm:block">Gestione Ricambi Officina</p>
+                    <p class="text-[8px] font-bold opacity-40 uppercase tracking-[0.2em] hidden sm:block">Gestione magazzino</p>
                 </div>
             </div>
 
@@ -105,7 +105,7 @@
         <!-- BARRA DI RICERCA -->
         <section class="mb-10 text-center">
             <div class="relative max-w-3xl mx-auto group mb-8">
-                <input v-model="searchQuery" type="text" placeholder="Cerca Cassetta (es. K), Codice o Nome..." 
+                <input v-model="searchQuery" type="text" placeholder="Cerca Cassetta, Codice o Nome..." 
                 class="w-full bg-white dark:bg-darkCard p-6 pl-16 rounded-[2.5rem] shadow-xl border border-slate-200 dark:border-slate-700 outline-none transition-all text-xl font-medium focus:border-riva group-hover:border-riva/30">
                 <span class="absolute left-7 top-7 text-2xl opacity-20 font-bold group-focus-within:opacity-100 transition-opacity">🔍</span>
             </div>
@@ -204,7 +204,7 @@
                             <h2 class="text-xl md:text-2xl font-black uppercase italic leading-tight dark:text-white transition-all">
                                 {{ editingId ? form.nome : 'Crea Nuova Scheda' }}
                             </h2>
-                            <p class="text-[9px] font-black text-riva uppercase tracking-widest mt-1">Archivio Digitale Riva Luciano</p>
+                            <p class="text-[9px] font-black text-riva uppercase tracking-widest mt-1">Archivio Digitale Riva Alimentari</p>
                         </div>
                         <button @click="closeModal" class="w-12 h-12 flex items-center justify-center rounded-2xl bg-slate-100 dark:bg-slate-800 text-2xl hover:rotate-90 transition-transform">&times;</button>
                     </div>
@@ -292,14 +292,14 @@
                     <img src="logo_elettricamente.png" alt="Elettricamente" class="max-h-full">
                 </div>
                 <h2 class="text-xl font-black uppercase tracking-tighter mb-1 dark:text-white">Riccardo Trabucchi</h2>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8 italic">Responsabile Software</p>
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.4em] mb-8 italic">Tecnico</p>
                 <div class="space-y-4 text-left bg-slate-50 dark:bg-darkBg p-6 rounded-2xl shadow-inner border dark:border-slate-800">
                     <div>
                         <p class="text-[8px] font-black text-slate-300 uppercase mb-1">E-mail Diretta</p>
                         <p class="font-bold text-xs lowercase italic dark:text-slate-300">trabucchiriccardo@gmail.com</p>
                     </div>
                     <div>
-                        <p class="text-[8px] font-black text-slate-300 uppercase mb-1">Telefono Assistenza</p>
+                        <p class="text-[8px] font-black text-slate-300 uppercase mb-1">Telefono</p>
                         <a href="tel:+393888877048" class="font-black text-lg text-riva tracking-tighter">+39 388 887 7048</a>
                     </div>
                 </div>
@@ -351,7 +351,7 @@
 
     <footer class="p-12 text-center mt-auto opacity-20 hover:opacity-100 transition-opacity">
         <button @click.stop="showContact = true" class="text-[9px] font-black opacity-40 uppercase tracking-[0.8em] hover:text-riva transition-colors">
-            Design & Engine by Elettricamente Pro
+            Programmato da Elettricamente per Riva Alimentari
         </button>
     </footer>
 
@@ -585,3 +585,4 @@
 
 </body>
 </html>
+
